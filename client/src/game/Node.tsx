@@ -128,7 +128,6 @@ export function Node({ node }: NodeProps) {
         color="#94a3b8"
         anchorX="center"
         anchorY="middle"
-        font="/fonts/inter.json"
       >
         {node.name}
       </Text>
@@ -139,7 +138,6 @@ export function Node({ node }: NodeProps) {
         color={getStatusColor()}
         anchorX="center"
         anchorY="middle"
-        font="/fonts/inter.json"
       >
         {node.pods.length}/{node.capacity} pods
       </Text>

@@ -1,6 +1,6 @@
 import { useRef } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
-import { OrbitControls, Stars, Float, Text3D, Center } from "@react-three/drei";
+import { OrbitControls, Stars, Float } from "@react-three/drei";
 import * as THREE from "three";
 import { useGame } from "@/lib/stores/useGame";
 import { Pod } from "./Pod";
@@ -67,30 +67,34 @@ function GridFloor() {
 
 function DataStreams() {
   const count = 50;
-  const positions = useRef<[number, number, number][]>([]);
+  const streamData = useRef<{ pos: [number, number, number]; speed: number; height: number }[]>([]);
   
-  if (positions.current.length === 0) {
+  if (streamData.current.length === 0) {
     for (let i = 0; i < count; i++) {
-      positions.current.push([
-        (Math.random() - 0.5) * 60,
-        Math.random() * 30 + 5,
-        (Math.random() - 0.5) * 60 - 20,
-      ]);
+      streamData.current.push({
+        pos: [
+          (Math.random() - 0.5) * 60,
+          Math.random() * 30 + 5,
+          (Math.random() - 0.5) * 60 - 20,
+        ],
+        speed: 1 + Math.random(),
+        height: 0.5 + Math.random() * 2,
+      });
     }
   }
   
   return (
     <group>
-      {positions.current.map((pos, i) => (
+      {streamData.current.map((data, i) => (
         <Float
           key={i}
-          speed={1 + Math.random()}
+          speed={data.speed}
           rotationIntensity={0.2}
           floatIntensity={2}
-          position={pos}
+          position={data.pos}
         >
           <mesh>
-            <boxGeometry args={[0.1, 0.5 + Math.random() * 2, 0.1]} />
+            <boxGeometry args={[0.1, data.height, 0.1]} />
             <meshStandardMaterial
               color={i % 3 === 0 ? "#3b82f6" : i % 3 === 1 ? "#8b5cf6" : "#10b981"}
               emissive={i % 3 === 0 ? "#3b82f6" : i % 3 === 1 ? "#8b5cf6" : "#10b981"}
@@ -105,32 +109,6 @@ function DataStreams() {
   );
 }
 
-function ClusterTitle() {
-  const { currentLevel, levels, phase } = useGame();
-  const level = levels[currentLevel];
-  
-  if (phase !== "playing") return null;
-  
-  return (
-    <group position={[0, 8, -15]}>
-      <Center>
-        <Text3D
-          font="/fonts/inter.json"
-          size={1.2}
-          height={0.2}
-          curveSegments={12}
-        >
-          {level?.name || "Cluster Conductor"}
-          <meshStandardMaterial 
-            color="#fff" 
-            emissive="#3b82f6"
-            emissiveIntensity={0.3}
-          />
-        </Text3D>
-      </Center>
-    </group>
-  );
-}
 
 function CameraController() {
   const { camera } = useThree();
@@ -166,7 +144,6 @@ export function Scene() {
       <Ground />
       <GridFloor />
       <DataStreams />
-      <ClusterTitle />
       
       {nodes.map((node) => (
         <Node key={node.id} node={node} />

@@ -119,7 +119,6 @@ export function Pod({ pod }: PodProps) {
         color="#94a3b8"
         anchorX="center"
         anchorY="middle"
-        font="/fonts/inter.json"
       >
         {pod.name}
       </Text>
@@ -130,7 +129,6 @@ export function Pod({ pod }: PodProps) {
         color={pod.status === "running" ? "#10b981" : "#f59e0b"}
         anchorX="center"
         anchorY="middle"
-        font="/fonts/inter.json"
       >
         {getStatusIcon()} {pod.status}
       </Text>
