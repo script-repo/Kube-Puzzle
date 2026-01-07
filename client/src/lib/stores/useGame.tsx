@@ -695,7 +695,7 @@ export const useGame = create<GameState>()(
       }
 
       // Apply the solution
-      const updatedNodes = state.nodes.map(node => ({ ...node, pods: [] }));
+      const updatedNodes = state.nodes.map(node => ({ ...node, pods: [] as string[] }));
       const updatedPods = state.pods.map(pod => {
         const targetNodeId = solutionMap[pod.id];
         if (targetNodeId) {

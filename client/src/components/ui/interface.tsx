@@ -12,7 +12,7 @@ export function Interface() {
 
   // Handle clicks on the interface in the ready phase to start the game
   useEffect(() => {
-    if (phase === "ready") {
+    if (phase === "menu") {
       const handleClick = () => {
         const activeElement = document.activeElement;
         if (activeElement && 'blur' in activeElement) {
@@ -51,7 +51,7 @@ export function Interface() {
       </div>
       
       {/* Game completion overlay */}
-      {phase === "ended" && (
+      {phase === "gameComplete" && (
         <div className="fixed inset-0 flex items-center justify-center z-20 bg-black/30">
           <Card className="w-full max-w-md mx-4 shadow-lg">
             <CardHeader>
