@@ -24,6 +24,23 @@ export function Node({ node }: NodeProps) {
   const isHighlighted = selectedPodId !== null && (hovered || hoveredNodeId === node.id);
   const isFull = node.pods.length >= node.capacity;
   const utilizationPercent = (node.pods.length / node.capacity) * 100;
+
+  // Extract node type from name
+  const getNodeType = () => {
+    const name = node.name.toLowerCase();
+    if (name.includes('worker')) return 'Worker Node';
+    if (name.includes('prod')) return 'Production';
+    if (name.includes('dev')) return 'Development';
+    if (name.includes('high-mem')) return 'High Memory';
+    if (name.includes('high-cpu')) return 'High CPU';
+    if (name.includes('gpu')) return 'GPU Node';
+    if (name.includes('storage')) {
+      if (name.includes('zone-a')) return 'Storage Zone A';
+      if (name.includes('zone-b')) return 'Storage Zone B';
+      if (name.includes('zone-c')) return 'Storage Zone C';
+    }
+    return 'Compute Node';
+  };
   
   const getStatusColor = () => {
     if (isFull) return "#ef4444";
@@ -141,7 +158,7 @@ export function Node({ node }: NodeProps) {
       >
         {node.pods.length}/{node.capacity} pods
       </Text>
-      
+
       <group position={[0, -0.3, 0]}>
         <mesh>
           <cylinderGeometry args={[0.1, 0.1, 0.3, 8]} />

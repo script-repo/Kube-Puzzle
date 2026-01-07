@@ -13,7 +13,7 @@ export function Pod({ pod }: PodProps) {
   const cubeRef = useRef<THREE.Mesh>(null);
   const [hovered, setHovered] = useState(false);
   
-  const { selectedPodId, selectPod } = useGame();
+  const { selectedPodId, selectPod, hoverPod } = useGame();
   const isSelected = selectedPodId === pod.id;
   const isScheduled = pod.nodeId !== null;
   
@@ -41,11 +41,13 @@ export function Pod({ pod }: PodProps) {
   
   const handlePointerEnter = () => {
     setHovered(true);
+    hoverPod(pod.id);
     document.body.style.cursor = "pointer";
   };
-  
+
   const handlePointerLeave = () => {
     setHovered(false);
+    hoverPod(null);
     document.body.style.cursor = "default";
   };
   
