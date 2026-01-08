@@ -717,7 +717,7 @@ function LevelComplete() {
 }
 
 function GameComplete() {
-  const { score, restart } = useGame();
+  const { score, restart, levels } = useGame();
 
   return (
     <div className="absolute inset-0 flex items-center justify-center bg-slate-900/90 backdrop-blur-md">
@@ -734,7 +734,7 @@ function GameComplete() {
           Kubernetes Master!
         </h2>
         <p className="text-slate-300 text-lg mb-8">
-          You've completed all 8 levels and mastered container orchestration!
+          You've completed all {levels.length} levels and mastered container orchestration!
         </p>
 
         <div className="mb-8 p-6 bg-gradient-to-br from-purple-500/20 to-indigo-500/20 rounded-xl border border-purple-500/40">
@@ -745,7 +745,7 @@ function GameComplete() {
         <div className="space-y-3 mb-8">
           <div className="flex items-center justify-center gap-2 text-sm text-green-400">
             <CheckCircle2 className="w-4 h-4" />
-            <span>All 8 Levels Completed</span>
+            <span>All {levels.length} Levels Completed</span>
           </div>
           <div className="flex items-center justify-center gap-2 text-sm text-blue-400">
             <Shield className="w-4 h-4" />
