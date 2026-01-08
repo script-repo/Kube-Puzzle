@@ -301,6 +301,157 @@ const LEVELS: Level[] = [
     hint: "Worker-2 has failed! Quickly move the 3 blue API pods to the remaining healthy nodes. Balance the load - don't overload any single node!",
     analysis: "The BEST solution distributes the 3 failed API pods evenly: one to worker-1, one to worker-3, one to worker-4. This maintains balanced load (3-3-3 distribution). Alternative solutions exist but are suboptimal - putting 2 API pods on one node creates uneven load. This scenario demonstrates Kubernetes' self-healing: when a node fails, pods are rescheduled across healthy nodes. The optimal strategy: balance load evenly while respecting capacity constraints. Fast, balanced recovery minimizes service disruption.",
   },
+  {
+    id: 9,
+    name: "CSI Persistent Volumes",
+    description: "Schedule stateful pods onto storage nodes with spread for resilience.",
+    nodes: [
+      { id: "node-1", name: "storage-a", capacity: 3, position: [-8, 0, 0], pods: [] },
+      { id: "node-2", name: "storage-b", capacity: 3, position: [-3, 0, 0], pods: [] },
+      { id: "node-3", name: "compute-1", capacity: 3, position: [3, 0, 0], pods: [] },
+      { id: "node-4", name: "compute-2", capacity: 3, position: [8, 0, 0], pods: [] },
+    ],
+    pods: [
+      { id: "pod-1", name: "db-0", color: "#ef4444", nodeId: null, status: "pending", position: [-8, 5, 8] },
+      { id: "pod-2", name: "db-1", color: "#ef4444", nodeId: null, status: "pending", position: [-6, 5, 8] },
+      { id: "pod-3", name: "logs-0", color: "#f59e0b", nodeId: null, status: "pending", position: [-4, 5, 8] },
+      { id: "pod-4", name: "logs-1", color: "#f59e0b", nodeId: null, status: "pending", position: [-2, 5, 8] },
+      { id: "pod-5", name: "api-0", color: "#3b82f6", nodeId: null, status: "pending", position: [2, 5, 8] },
+      { id: "pod-6", name: "api-1", color: "#3b82f6", nodeId: null, status: "pending", position: [4, 5, 8] },
+      { id: "pod-7", name: "api-2", color: "#3b82f6", nodeId: null, status: "pending", position: [6, 5, 8] },
+    ],
+    objectives: [
+      { description: "Stateful pods must run only on storage nodes", completed: false },
+      { description: "db-0 and db-1 must be on different storage nodes", completed: false },
+      { description: "All pods must be scheduled", completed: false },
+    ],
+    targetConfiguration: {},
+    hint: "CSI-backed pods need storage nodes and replica spread for resilience.",
+    analysis: "This level emphasizes storage topology awareness and PV binding. Stateful pods must land on storage-capable nodes, while db replicas must be separated across storage nodes to keep data resilient during failures.",
+  },
+  {
+    id: 10,
+    name: "CNI Network Segmentation",
+    description: "Keep edge ingress separate from internal services.",
+    nodes: [
+      { id: "node-1", name: "edge-1", capacity: 3, position: [-8, 0, 0], pods: [] },
+      { id: "node-2", name: "edge-2", capacity: 3, position: [-3, 0, 0], pods: [] },
+      { id: "node-3", name: "internal-1", capacity: 3, position: [3, 0, 0], pods: [] },
+      { id: "node-4", name: "internal-2", capacity: 3, position: [8, 0, 0], pods: [] },
+    ],
+    pods: [
+      { id: "pod-1", name: "ingress-0", color: "#f97316", nodeId: null, status: "pending", position: [-8, 5, 8] },
+      { id: "pod-2", name: "ingress-1", color: "#f97316", nodeId: null, status: "pending", position: [-6, 5, 8] },
+      { id: "pod-3", name: "frontend-0", color: "#3b82f6", nodeId: null, status: "pending", position: [-4, 5, 8] },
+      { id: "pod-4", name: "frontend-1", color: "#3b82f6", nodeId: null, status: "pending", position: [-2, 5, 8] },
+      { id: "pod-5", name: "backend-0", color: "#10b981", nodeId: null, status: "pending", position: [2, 5, 8] },
+      { id: "pod-6", name: "backend-1", color: "#10b981", nodeId: null, status: "pending", position: [4, 5, 8] },
+      { id: "pod-7", name: "metrics-0", color: "#a855f7", nodeId: null, status: "pending", position: [6, 5, 8] },
+    ],
+    objectives: [
+      { description: "Ingress pods must run only on edge nodes", completed: false },
+      { description: "Backend and metrics pods must run only on internal nodes", completed: false },
+      { description: "Each edge node must host exactly one ingress pod", completed: false },
+    ],
+    targetConfiguration: {},
+    hint: "Treat edge as north–south traffic and internal as east–west services.",
+    analysis: "This level highlights network segmentation and CNI-enforced boundaries. Edge nodes terminate ingress traffic, while internal nodes host backend services and metrics to reduce exposure.",
+  },
+  {
+    id: 11,
+    name: "Authentication & RBAC Hardening",
+    description: "Isolate identity services from general workloads.",
+    nodes: [
+      { id: "node-1", name: "secure-1", capacity: 3, position: [-8, 0, 0], pods: [] },
+      { id: "node-2", name: "secure-2", capacity: 3, position: [-3, 0, 0], pods: [] },
+      { id: "node-3", name: "general-1", capacity: 3, position: [3, 0, 0], pods: [] },
+      { id: "node-4", name: "general-2", capacity: 3, position: [8, 0, 0], pods: [] },
+    ],
+    pods: [
+      { id: "pod-1", name: "auth-api-0", color: "#ef4444", nodeId: null, status: "pending", position: [-8, 5, 8] },
+      { id: "pod-2", name: "auth-api-1", color: "#ef4444", nodeId: null, status: "pending", position: [-6, 5, 8] },
+      { id: "pod-3", name: "oidc-0", color: "#ef4444", nodeId: null, status: "pending", position: [-4, 5, 8] },
+      { id: "pod-4", name: "cert-manager-0", color: "#ef4444", nodeId: null, status: "pending", position: [-2, 5, 8] },
+      { id: "pod-5", name: "frontend-0", color: "#3b82f6", nodeId: null, status: "pending", position: [2, 5, 8] },
+      { id: "pod-6", name: "frontend-1", color: "#3b82f6", nodeId: null, status: "pending", position: [4, 5, 8] },
+      { id: "pod-7", name: "batch-report-0", color: "#6b7280", nodeId: null, status: "pending", position: [6, 5, 8] },
+    ],
+    objectives: [
+      { description: "Auth/security pods must run only on secure nodes", completed: false },
+      { description: "Non-auth pods must run only on general nodes", completed: false },
+      { description: "All pods must be scheduled", completed: false },
+    ],
+    targetConfiguration: {},
+    hint: "Keep identity/security plane isolated.",
+    analysis: "This level connects RBAC and identity services to isolated node pools. Keeping auth services on secure nodes reduces blast radius and limits access to sensitive components.",
+  },
+  {
+    id: 12,
+    name: "Cluster API Control Plane",
+    description: "Separate management plane from workloads and maintain etcd quorum.",
+    nodes: [
+      { id: "node-1", name: "control-1", capacity: 2, position: [-10, 0, 0], pods: [] },
+      { id: "node-2", name: "control-2", capacity: 2, position: [-6, 0, 0], pods: [] },
+      { id: "node-3", name: "control-3", capacity: 2, position: [-2, 0, 0], pods: [] },
+      { id: "node-4", name: "worker-1", capacity: 3, position: [2, 0, 0], pods: [] },
+      { id: "node-5", name: "worker-2", capacity: 3, position: [6, 0, 0], pods: [] },
+      { id: "node-6", name: "worker-3", capacity: 3, position: [10, 0, 0], pods: [] },
+    ],
+    pods: [
+      { id: "pod-1", name: "kube-apiserver-0", color: "#ef4444", nodeId: null, status: "pending", position: [-10, 5, 8] },
+      { id: "pod-2", name: "kube-apiserver-1", color: "#ef4444", nodeId: null, status: "pending", position: [-8, 5, 8] },
+      { id: "pod-3", name: "kube-apiserver-2", color: "#ef4444", nodeId: null, status: "pending", position: [-6, 5, 8] },
+      { id: "pod-4", name: "etcd-0", color: "#10b981", nodeId: null, status: "pending", position: [-4, 5, 8] },
+      { id: "pod-5", name: "etcd-1", color: "#10b981", nodeId: null, status: "pending", position: [-2, 5, 8] },
+      { id: "pod-6", name: "etcd-2", color: "#10b981", nodeId: null, status: "pending", position: [0, 5, 8] },
+      { id: "pod-7", name: "capi-controller-0", color: "#f59e0b", nodeId: null, status: "pending", position: [2, 5, 8] },
+      { id: "pod-8", name: "machine-controller-0", color: "#f59e0b", nodeId: null, status: "pending", position: [4, 5, 8] },
+      { id: "pod-9", name: "workload-0", color: "#3b82f6", nodeId: null, status: "pending", position: [6, 5, 8] },
+      { id: "pod-10", name: "workload-1", color: "#3b82f6", nodeId: null, status: "pending", position: [8, 5, 8] },
+      { id: "pod-11", name: "workload-2", color: "#3b82f6", nodeId: null, status: "pending", position: [10, 5, 8] },
+    ],
+    objectives: [
+      { description: "Control-plane pods must run only on control nodes", completed: false },
+      { description: "etcd replicas must be on three distinct control nodes", completed: false },
+      { description: "Workloads must run only on worker nodes", completed: false },
+    ],
+    targetConfiguration: {},
+    hint: "Keep the management plane on control nodes; spread etcd for quorum.",
+    analysis: "This level reinforces CAPI separation and control-plane resiliency. Control-plane services remain isolated, etcd replicas are spread across control nodes for quorum, and workloads stay on worker nodes.",
+  },
+  {
+    id: 13,
+    name: "Fleet Management & GitOps",
+    description: "Place GitOps agents, fleet controllers, and workloads across hub and spokes.",
+    nodes: [
+      { id: "node-1", name: "hub-1", capacity: 3, position: [-8, 0, 0], pods: [] },
+      { id: "node-2", name: "spoke-1", capacity: 3, position: [-3, 0, 0], pods: [] },
+      { id: "node-3", name: "spoke-2", capacity: 3, position: [3, 0, 0], pods: [] },
+      { id: "node-4", name: "spoke-3", capacity: 3, position: [8, 0, 0], pods: [] },
+    ],
+    pods: [
+      { id: "pod-1", name: "gitops-agent-hub", color: "#f59e0b", nodeId: null, status: "pending", position: [-8, 5, 8] },
+      { id: "pod-2", name: "gitops-agent-spoke1", color: "#f59e0b", nodeId: null, status: "pending", position: [-6, 5, 8] },
+      { id: "pod-3", name: "gitops-agent-spoke2", color: "#f59e0b", nodeId: null, status: "pending", position: [-4, 5, 8] },
+      { id: "pod-4", name: "gitops-agent-spoke3", color: "#f59e0b", nodeId: null, status: "pending", position: [-2, 5, 8] },
+      { id: "pod-5", name: "fleet-controller-0", color: "#ef4444", nodeId: null, status: "pending", position: [2, 5, 8] },
+      { id: "pod-6", name: "policy-controller-0", color: "#ef4444", nodeId: null, status: "pending", position: [4, 5, 8] },
+      { id: "pod-7", name: "config-sync-1", color: "#10b981", nodeId: null, status: "pending", position: [6, 5, 8] },
+      { id: "pod-8", name: "config-sync-2", color: "#10b981", nodeId: null, status: "pending", position: [8, 5, 8] },
+      { id: "pod-9", name: "config-sync-3", color: "#10b981", nodeId: null, status: "pending", position: [-6, 5, 12] },
+      { id: "pod-10", name: "workload-1", color: "#3b82f6", nodeId: null, status: "pending", position: [-2, 5, 12] },
+      { id: "pod-11", name: "workload-2", color: "#3b82f6", nodeId: null, status: "pending", position: [2, 5, 12] },
+      { id: "pod-12", name: "workload-3", color: "#3b82f6", nodeId: null, status: "pending", position: [6, 5, 12] },
+    ],
+    objectives: [
+      { description: "Each node must run its matching GitOps agent", completed: false },
+      { description: "Fleet and policy controllers must run on the hub node only", completed: false },
+      { description: "Config sync and workloads must run on spoke nodes only", completed: false },
+    ],
+    targetConfiguration: {},
+    hint: "Hub hosts controllers, spokes host sync + workloads.",
+    analysis: "This level explains the fleet management pattern with GitOps agents per cluster. The hub hosts central controllers, while spokes run config sync and workloads.",
+  },
 ];
 
 export const useGame = create<GameState>()(
@@ -557,6 +708,95 @@ export const useGame = create<GameState>()(
           } else if (index === 2) {
             completed = state.nodes.filter(n => n.id !== "node-2").every(n => n.pods.length <= n.capacity);
           }
+        } else if (level.id === 9) {
+          if (index === 0) {
+            const storageNodes = ["node-1", "node-2"];
+            const statefulPods = state.pods.filter(p => p.name.startsWith("db-") || p.name.startsWith("logs-"));
+            completed = statefulPods.every(p => storageNodes.includes(p.nodeId || ""));
+          } else if (index === 1) {
+            const db0 = state.pods.find(p => p.name === "db-0");
+            const db1 = state.pods.find(p => p.name === "db-1");
+            const storageNodes = ["node-1", "node-2"];
+            completed =
+              !!db0?.nodeId &&
+              !!db1?.nodeId &&
+              storageNodes.includes(db0.nodeId) &&
+              storageNodes.includes(db1.nodeId) &&
+              db0.nodeId !== db1.nodeId;
+          } else if (index === 2) {
+            completed = state.pods.every(p => p.nodeId !== null);
+          }
+        } else if (level.id === 10) {
+          const edgeNodes = ["node-1", "node-2"];
+          const internalNodes = ["node-3", "node-4"];
+          if (index === 0) {
+            const ingressPods = state.pods.filter(p => p.name.startsWith("ingress-"));
+            completed = ingressPods.every(p => edgeNodes.includes(p.nodeId || ""));
+          } else if (index === 1) {
+            const backendPods = state.pods.filter(p => p.name.startsWith("backend-"));
+            const metricsPods = state.pods.filter(p => p.name.startsWith("metrics-"));
+            completed = [...backendPods, ...metricsPods].every(p => internalNodes.includes(p.nodeId || ""));
+          } else if (index === 2) {
+            const ingressPods = state.pods.filter(p => p.name.startsWith("ingress-"));
+            const node1Count = ingressPods.filter(p => p.nodeId === "node-1").length;
+            const node2Count = ingressPods.filter(p => p.nodeId === "node-2").length;
+            completed = node1Count === 1 && node2Count === 1;
+          }
+        } else if (level.id === 11) {
+          const secureNodes = ["node-1", "node-2"];
+          const generalNodes = ["node-3", "node-4"];
+          const securityPods = state.pods.filter(p =>
+            p.name.startsWith("auth-") || p.name.startsWith("oidc-") || p.name.startsWith("cert-manager-")
+          );
+          const nonSecurityPods = state.pods.filter(
+            p => !p.name.startsWith("auth-") && !p.name.startsWith("oidc-") && !p.name.startsWith("cert-manager-")
+          );
+          if (index === 0) {
+            completed = securityPods.every(p => secureNodes.includes(p.nodeId || ""));
+          } else if (index === 1) {
+            completed = nonSecurityPods.every(p => generalNodes.includes(p.nodeId || ""));
+          } else if (index === 2) {
+            completed = state.pods.every(p => p.nodeId !== null);
+          }
+        } else if (level.id === 12) {
+          const controlNodes = ["node-1", "node-2", "node-3"];
+          const workerNodes = ["node-4", "node-5", "node-6"];
+          const controlPlanePods = state.pods.filter(p =>
+            p.name.startsWith("kube-apiserver-") ||
+            p.name.startsWith("etcd-") ||
+            p.name.startsWith("capi-controller-") ||
+            p.name.startsWith("machine-controller-")
+          );
+          if (index === 0) {
+            completed = controlPlanePods.every(p => !p.nodeId || controlNodes.includes(p.nodeId));
+          } else if (index === 1) {
+            const etcdPods = state.pods.filter(p => p.name.startsWith("etcd-"));
+            const etcdNodes = etcdPods.map(p => p.nodeId).filter(Boolean) as string[];
+            completed = etcdNodes.length === 3 && new Set(etcdNodes).size === 3 && etcdNodes.every(node => controlNodes.includes(node));
+          } else if (index === 2) {
+            const workloads = state.pods.filter(p => p.name.startsWith("workload-"));
+            completed = workloads.every(p => workerNodes.includes(p.nodeId || ""));
+          }
+        } else if (level.id === 13) {
+          const agentTargets: Record<string, string> = {
+            "gitops-agent-hub": "node-1",
+            "gitops-agent-spoke1": "node-2",
+            "gitops-agent-spoke2": "node-3",
+            "gitops-agent-spoke3": "node-4",
+          };
+          const spokeNodes = ["node-2", "node-3", "node-4"];
+          if (index === 0) {
+            const agents = state.pods.filter(p => p.name.startsWith("gitops-agent-"));
+            completed = agents.every(p => agentTargets[p.name] === p.nodeId);
+          } else if (index === 1) {
+            const controllers = state.pods.filter(
+              p => p.name.startsWith("fleet-controller-") || p.name.startsWith("policy-controller-")
+            );
+            completed = controllers.every(p => p.nodeId === "node-1");
+          } else if (index === 2) {
+            const spokePods = state.pods.filter(p => p.name.startsWith("config-sync-") || p.name.startsWith("workload-"));
+            completed = spokePods.every(p => spokeNodes.includes(p.nodeId || ""));
+          }
         }
         
         if (!completed) allComplete = false;
@@ -691,6 +931,63 @@ export const useGame = create<GameState>()(
           "pod-7": "node-3", // cache-2 (already there)
           "pod-8": "node-4", // db-1 (already there)
           "pod-9": "node-4", // db-2 (already there)
+        };
+      } else if (levelId === 9) {
+        solutionMap = {
+          "pod-1": "node-1", // db-0
+          "pod-2": "node-2", // db-1
+          "pod-3": "node-1", // logs-0
+          "pod-4": "node-2", // logs-1
+          "pod-5": "node-3", // api-0
+          "pod-6": "node-3", // api-1
+          "pod-7": "node-4", // api-2
+        };
+      } else if (levelId === 10) {
+        solutionMap = {
+          "pod-1": "node-1", // ingress-0
+          "pod-2": "node-2", // ingress-1
+          "pod-3": "node-1", // frontend-0
+          "pod-4": "node-2", // frontend-1
+          "pod-5": "node-3", // backend-0
+          "pod-6": "node-3", // backend-1
+          "pod-7": "node-3", // metrics-0
+        };
+      } else if (levelId === 11) {
+        solutionMap = {
+          "pod-1": "node-1", // auth-api-0
+          "pod-2": "node-2", // auth-api-1
+          "pod-3": "node-1", // oidc-0
+          "pod-4": "node-1", // cert-manager-0
+          "pod-5": "node-3", // frontend-0
+          "pod-6": "node-3", // frontend-1
+          "pod-7": "node-4", // batch-report-0
+        };
+      } else if (levelId === 12) {
+        solutionMap = {
+          "pod-1": "node-1", // kube-apiserver-0
+          "pod-2": "node-2", // kube-apiserver-1
+          "pod-3": "node-3", // kube-apiserver-2
+          "pod-4": "node-1", // etcd-0
+          "pod-5": "node-2", // etcd-1
+          "pod-6": "node-3", // etcd-2
+          "pod-9": "node-4", // workload-0
+          "pod-10": "node-5", // workload-1
+          "pod-11": "node-6", // workload-2
+        };
+      } else if (levelId === 13) {
+        solutionMap = {
+          "pod-1": "node-1", // gitops-agent-hub
+          "pod-2": "node-2", // gitops-agent-spoke1
+          "pod-3": "node-3", // gitops-agent-spoke2
+          "pod-4": "node-4", // gitops-agent-spoke3
+          "pod-5": "node-1", // fleet-controller-0
+          "pod-6": "node-1", // policy-controller-0
+          "pod-7": "node-2", // config-sync-1
+          "pod-8": "node-3", // config-sync-2
+          "pod-9": "node-4", // config-sync-3
+          "pod-10": "node-2", // workload-1
+          "pod-11": "node-3", // workload-2
+          "pod-12": "node-4", // workload-3
         };
       }
 
