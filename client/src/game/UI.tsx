@@ -105,7 +105,7 @@ function MainMenu() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
             <div className="p-4 rounded-xl bg-gradient-to-br from-blue-500/10 to-blue-600/5 border border-blue-500/20">
               <Box className="w-8 h-8 text-blue-400 mx-auto mb-2" />
-              <h3 className="font-semibold text-slate-200 mb-1">8 Levels</h3>
+              <h3 className="font-semibold text-slate-200 mb-1">{levels.length} Levels</h3>
               <p className="text-xs text-slate-400">Progressive difficulty</p>
             </div>
             <div className="p-4 rounded-xl bg-gradient-to-br from-purple-500/10 to-purple-600/5 border border-purple-500/20">
@@ -203,7 +203,12 @@ function LevelBriefing() {
       5: "Node Selectors - Environment isolation and namespace separation",
       6: "Pod Priority - Critical workloads and resource preemption",
       7: "StatefulSets - Ordered deployment with storage topology",
-      8: "Self-Healing - Handling node failures and pod rescheduling"
+      8: "Self-Healing - Handling node failures and pod rescheduling",
+      9: "CSI Storage - PV binding & topology awareness",
+      10: "CNI Segmentation - edge vs internal traffic",
+      11: "Auth & RBAC - identity plane isolation",
+      12: "Cluster API - control-plane separation & quorum",
+      13: "Fleet GitOps - hub/spoke management"
     };
     return concepts[levelId] || "Kubernetes Orchestration";
   };
@@ -222,7 +227,7 @@ function LevelBriefing() {
         <div className="space-y-6">
           <div>
             <div className="inline-block bg-indigo-500/20 px-3 py-1 rounded-full text-indigo-300 text-sm font-medium mb-2">
-              Level {level?.id} of 8
+              Level {level?.id} of {levels.length}
             </div>
             <h3 className="text-3xl font-bold text-white mb-2">{level?.name}</h3>
             <p className="text-slate-400 text-lg">{level?.description}</p>
@@ -427,7 +432,7 @@ function GameHUD() {
         <Card className="p-3 px-5 bg-slate-900/95 border-indigo-500/30 flex items-center gap-4">
           <div className="flex items-center gap-2">
             <Cpu className="w-5 h-5 text-indigo-400" />
-            <span className="font-semibold text-slate-200">Level {level?.id}/8</span>
+            <span className="font-semibold text-slate-200">Level {level?.id}/{levels.length}</span>
           </div>
           <div className="h-6 w-px bg-slate-700"></div>
           <span className="text-sm text-slate-300">{level?.name}</span>

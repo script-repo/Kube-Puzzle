@@ -91,8 +91,8 @@ export function SoundManager() {
     if (phase === "playing") {
       const levelNum = currentLevel + 1; // Convert 0-indexed to 1-indexed
 
-      // Level 8 (index 7): Track 9
-      if (levelNum === 8) {
+      // Level 8+ (index 7+): Track 9
+      if (levelNum >= 8) {
         return musicTracks.current.track9;
       }
 
