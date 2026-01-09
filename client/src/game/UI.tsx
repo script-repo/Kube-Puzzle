@@ -321,6 +321,8 @@ function GameHUD() {
     hoveredPodId,
     revealsRemaining,
     solutionRevealed,
+    controlPlane,
+    hoveredControlPlaneId,
     loadLevel,
     restart,
     revealSolution
@@ -372,38 +374,157 @@ function GameHUD() {
         </div>
       )}
 
-      {/* Hover Info Display */}
-      {!solutionRevealed && (hoveredNode || hoveredPod) && (
+      {/* Enhanced Hover Info Display */}
+      {!solutionRevealed && (hoveredNode || hoveredPod || hoveredControlPlaneId) && (
         <div className="absolute top-4 left-1/2 transform -translate-x-1/2 z-50">
-          <Card className="p-4 px-6 bg-slate-900/98 border-indigo-500/50 shadow-2xl">
+          <Card className="p-4 px-6 bg-slate-900/98 border-indigo-500/50 shadow-2xl max-w-md">
+            {/* Control Plane Node Info */}
+            {hoveredControlPlaneId && (() => {
+              const cpNode = controlPlane.find(cp => cp.id === hoveredControlPlaneId);
+              if (!cpNode) return null;
+
+              return (
+                <div className="text-center">
+                  <div className="flex items-center justify-center gap-3 mb-2">
+                    <Cpu className="w-6 h-6 text-purple-400" />
+                    <h3 className="text-2xl font-bold text-white">{cpNode.name}</h3>
+                  </div>
+                  <p className="text-lg text-purple-300 mb-2">Control Plane: {cpNode.componentType}</p>
+                  <div className="flex items-center justify-center gap-4 text-sm">
+                    <span className="text-slate-400">
+                      Status: <span className={`font-semibold ${
+                        cpNode.healthy ? 'text-green-400' : 'text-red-400'
+                      }`}>{cpNode.healthy ? 'Healthy' : 'Unhealthy'}</span>
+                    </span>
+                  </div>
+                  {cpNode.componentType === 'etcd' && (
+                    <p className="text-xs text-slate-500 mt-2">
+                      Stores cluster state and configuration
+                    </p>
+                  )}
+                  {cpNode.componentType === 'apiserver' && (
+                    <p className="text-xs text-slate-500 mt-2">
+                      API endpoint for all cluster operations
+                    </p>
+                  )}
+                  {cpNode.componentType === 'scheduler' && (
+                    <p className="text-xs text-slate-500 mt-2">
+                      Assigns pods to nodes based on resources
+                    </p>
+                  )}
+                  {cpNode.componentType === 'controller-manager' && (
+                    <p className="text-xs text-slate-500 mt-2">
+                      Manages cluster controllers
+                    </p>
+                  )}
+                </div>
+              );
+            })()}
+
+            {/* Worker Node Info (Enhanced) */}
             {hoveredNode && (
               <div className="text-center">
                 <div className="flex items-center justify-center gap-3 mb-2">
                   <Server className="w-6 h-6 text-indigo-400" />
                   <h3 className="text-2xl font-bold text-white">{hoveredNode.name}</h3>
                 </div>
-                <p className="text-lg text-indigo-300 mb-2">{getNodeType(hoveredNode.name)}</p>
-                <div className="flex items-center justify-center gap-4 text-sm">
-                  <span className="text-slate-400">
-                    Capacity: <span className="text-white font-semibold">{hoveredNode.capacity} pods</span>
-                  </span>
-                  <span className="text-slate-600">•</span>
-                  <span className="text-slate-400">
-                    Used: <span className={`font-semibold ${
+                <p className="text-lg text-indigo-300 mb-3">{getNodeType(hoveredNode.name)}</p>
+
+                {/* Resource Grid */}
+                <div className="grid grid-cols-2 gap-3 text-sm mb-3">
+                  {/* Pod Capacity */}
+                  <div className="bg-slate-800/50 p-2 rounded">
+                    <div className="text-slate-400 text-xs mb-1">Pod Capacity</div>
+                    <div className={`font-semibold ${
                       hoveredNode.pods.length >= hoveredNode.capacity ? 'text-red-400' :
                       hoveredNode.pods.length > 0 ? 'text-yellow-400' : 'text-green-400'
-                    }`}>{hoveredNode.pods.length}/{hoveredNode.capacity}</span>
-                  </span>
+                    }`}>
+                      {hoveredNode.pods.length}/{hoveredNode.capacity}
+                    </div>
+                  </div>
+
+                  {/* vCPU */}
+                  <div className="bg-slate-800/50 p-2 rounded">
+                    <div className="text-slate-400 text-xs mb-1">vCPU</div>
+                    <div className="text-blue-400 font-semibold">
+                      {hoveredNode.resources.vCPUUsed}/{hoveredNode.resources.vCPU} cores
+                    </div>
+                  </div>
+
+                  {/* Memory */}
+                  <div className="bg-slate-800/50 p-2 rounded">
+                    <div className="text-slate-400 text-xs mb-1">Memory</div>
+                    <div className="text-green-400 font-semibold">
+                      {hoveredNode.resources.memoryUsed}/{hoveredNode.resources.memory} GB
+                    </div>
+                  </div>
+
+                  {/* Storage */}
+                  <div className="bg-slate-800/50 p-2 rounded">
+                    <div className="text-slate-400 text-xs mb-1">Storage</div>
+                    <div className="text-purple-400 font-semibold text-xs">
+                      {hoveredNode.infrastructure.storageTypes.join(', ') || 'none'}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Infrastructure Details */}
+                <div className="text-xs text-slate-400 space-y-1 border-t border-slate-700 pt-2">
+                  <div className="flex justify-between">
+                    <span>Type:</span>
+                    <span className="text-slate-300">{hoveredNode.infrastructure.hypervisor || 'baremetal'}</span>
+                  </div>
+                  {hoveredNode.infrastructure.physicalHostId && (
+                    <div className="flex justify-between">
+                      <span>Physical Host:</span>
+                      <span className="text-purple-300">{hoveredNode.infrastructure.physicalHostId}</span>
+                    </div>
+                  )}
+                  {hoveredNode.infrastructure.zone && (
+                    <div className="flex justify-between">
+                      <span>Zone:</span>
+                      <span className="text-blue-300">{hoveredNode.infrastructure.zone}</span>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
+
+            {/* Pod Info (Enhanced) */}
             {hoveredPod && (
               <div className="text-center">
                 <div className="flex items-center justify-center gap-3 mb-2">
                   <Box className="w-6 h-6" style={{ color: hoveredPod.color }} />
                   <h3 className="text-2xl font-bold text-white">{hoveredPod.name}</h3>
                 </div>
-                <div className="flex items-center justify-center gap-4 text-sm">
+
+                {/* Resource Requests */}
+                <div className="grid grid-cols-2 gap-2 text-sm mb-3">
+                  <div className="bg-slate-800/50 p-2 rounded">
+                    <div className="text-slate-400 text-xs mb-1">vCPU Request</div>
+                    <div className="text-blue-400 font-semibold">
+                      {hoveredPod.resources.vCPURequest} cores
+                    </div>
+                  </div>
+                  <div className="bg-slate-800/50 p-2 rounded">
+                    <div className="text-slate-400 text-xs mb-1">Memory Request</div>
+                    <div className="text-green-400 font-semibold">
+                      {hoveredPod.resources.memoryRequest} GB
+                    </div>
+                  </div>
+                </div>
+
+                {/* Storage Requirements */}
+                {hoveredPod.storage?.required && (
+                  <div className="bg-purple-500/10 border border-purple-500/30 p-2 rounded mb-3">
+                    <div className="text-xs text-purple-300">
+                      Requires {hoveredPod.storage.type} storage ({hoveredPod.storage.size}GB)
+                    </div>
+                  </div>
+                )}
+
+                {/* Status and Node */}
+                <div className="flex items-center justify-center gap-4 text-sm border-t border-slate-700 pt-2">
                   <span className="text-slate-400">
                     Status: <span className={`font-semibold ${
                       hoveredPod.status === 'running' ? 'text-green-400' :
@@ -518,6 +639,9 @@ function GameHUD() {
           <div className="space-y-3">
             {nodes.map(node => {
               const utilization = node.capacity > 0 ? (node.pods.length / node.capacity) * 100 : 0;
+              const vCPUUtilization = node.resources?.vCPU > 0 ? (node.resources.vCPUUsed / node.resources.vCPU) * 100 : 0;
+              const memoryUtilization = node.resources?.memory > 0 ? (node.resources.memoryUsed / node.resources.memory) * 100 : 0;
+
               return (
                 <div key={node.id} className="p-3 rounded-lg bg-slate-800/50 border border-slate-700/50">
                   <div className="flex justify-between items-center mb-2">
@@ -532,7 +656,44 @@ function GameHUD() {
                       {node.pods.length}/{node.capacity}
                     </span>
                   </div>
+
+                  {/* Pod Capacity Progress Bar */}
                   <Progress value={utilization} className="h-1.5 mb-2" />
+
+                  {/* Resource Utilization Bars */}
+                  {node.resources && (
+                    <div className="space-y-1.5 mb-2">
+                      {/* vCPU Utilization */}
+                      <div>
+                        <div className="flex justify-between items-center mb-0.5">
+                          <span className="text-xs text-slate-400">vCPU</span>
+                          <span className="text-xs text-blue-400 font-medium">
+                            {node.resources.vCPUUsed.toFixed(1)}/{node.resources.vCPU}
+                          </span>
+                        </div>
+                        <Progress
+                          value={vCPUUtilization}
+                          className="h-1 bg-blue-950"
+                        />
+                      </div>
+
+                      {/* Memory Utilization */}
+                      <div>
+                        <div className="flex justify-between items-center mb-0.5">
+                          <span className="text-xs text-slate-400">Memory</span>
+                          <span className="text-xs text-green-400 font-medium">
+                            {node.resources.memoryUsed.toFixed(1)}/{node.resources.memory}GB
+                          </span>
+                        </div>
+                        <Progress
+                          value={memoryUtilization}
+                          className="h-1 bg-green-950"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Pod Visual Slots */}
                   <div className="flex gap-1">
                     {Array.from({ length: node.capacity }).map((_, i) => {
                       const podId = node.pods[i];
@@ -575,6 +736,98 @@ function GameHUD() {
           </div>
         </Card>
       </div>
+
+      {/* Control Plane Status Panel */}
+      {controlPlane.length > 0 && (
+        <div className="absolute top-36 right-80 w-72">
+          <Card className="p-4 bg-slate-900/95 border-purple-500/30">
+            <h3 className="text-sm font-medium text-slate-300 mb-3 flex items-center gap-2">
+              <Cpu className="w-4 h-4 text-purple-400" /> Control Plane
+            </h3>
+
+            {/* Overall Cluster Health */}
+            <div className="mb-4 p-3 rounded-lg bg-slate-800/50 border border-slate-700/50">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-slate-400">Cluster Health</span>
+                <span className={`text-xs px-2 py-1 rounded-full font-semibold ${
+                  controlPlane.every(cp => cp.healthy)
+                    ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                    : 'bg-red-500/20 text-red-400 border border-red-500/30'
+                }`}>
+                  {controlPlane.every(cp => cp.healthy) ? '✓ Healthy' : '✗ Degraded'}
+                </span>
+              </div>
+            </div>
+
+            {/* Control Plane Components */}
+            <div className="space-y-2">
+              {controlPlane.map(cpNode => {
+                const getComponentColor = () => {
+                  switch (cpNode.componentType) {
+                    case 'etcd': return 'green';
+                    case 'apiserver': return 'red';
+                    case 'scheduler': return 'orange';
+                    case 'controller-manager': return 'purple';
+                    default: return 'gray';
+                  }
+                };
+
+                const color = getComponentColor();
+                const colorClasses = {
+                  green: 'bg-green-500/10 border-green-500/30 text-green-400',
+                  red: 'bg-red-500/10 border-red-500/30 text-red-400',
+                  orange: 'bg-orange-500/10 border-orange-500/30 text-orange-400',
+                  purple: 'bg-purple-500/10 border-purple-500/30 text-purple-400',
+                  gray: 'bg-gray-500/10 border-gray-500/30 text-gray-400',
+                };
+
+                return (
+                  <div
+                    key={cpNode.id}
+                    className={`p-2.5 rounded-lg border ${colorClasses[color as keyof typeof colorClasses]}`}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-sm font-medium">{cpNode.componentType}</span>
+                      <span className={`text-xs px-1.5 py-0.5 rounded font-semibold ${
+                        cpNode.healthy
+                          ? 'bg-green-500/20 text-green-400'
+                          : 'bg-red-500/20 text-red-400'
+                      }`}>
+                        {cpNode.healthy ? '✓' : '✗'}
+                      </span>
+                    </div>
+                    <div className="text-xs text-slate-400">
+                      {cpNode.name}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Component Legend */}
+            <div className="mt-4 pt-3 border-t border-slate-700/50 text-xs text-slate-500">
+              <div className="grid grid-cols-2 gap-1">
+                <div className="flex items-center gap-1">
+                  <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                  <span>etcd</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                  <span>API</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-2 h-2 rounded-full bg-orange-500"></div>
+                  <span>Scheduler</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <div className="w-2 h-2 rounded-full bg-purple-500"></div>
+                  <span>Controller</span>
+                </div>
+              </div>
+            </div>
+          </Card>
+        </div>
+      )}
 
       {/* Selection Hint */}
       {selectedPodId && (

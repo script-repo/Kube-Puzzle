@@ -13,12 +13,13 @@ export function Node({ node }: NodeProps) {
   const glowRef = useRef<THREE.Mesh>(null);
   const [hovered, setHovered] = useState(false);
   
-  const { 
-    selectedPodId, 
-    hoveredNodeId, 
-    hoverNode, 
+  const {
+    selectedPodId,
+    hoveredNodeId,
+    hoverNode,
+    hoverPhysicalHost,
     movePodToNode,
-    pods 
+    pods
   } = useGame();
   
   const isHighlighted = selectedPodId !== null && (hovered || hoveredNodeId === node.id);
@@ -85,13 +86,23 @@ export function Node({ node }: NodeProps) {
   const handlePointerEnter = () => {
     setHovered(true);
     hoverNode(node.id);
+
+    // Also highlight physical host if this node is on one
+    if (node.infrastructure.physicalHostId) {
+      hoverPhysicalHost(node.infrastructure.physicalHostId);
+    }
+
     const canPlace = selectedPodId && !isFull;
     document.body.style.cursor = canPlace ? "pointer" : "default";
   };
-  
+
   const handlePointerLeave = () => {
     setHovered(false);
     hoverNode(null);
+
+    // Clear physical host highlight
+    hoverPhysicalHost(null);
+
     document.body.style.cursor = "default";
   };
   

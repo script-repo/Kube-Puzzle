@@ -6,6 +6,8 @@ import { useGame } from "@/lib/stores/useGame";
 import { Pod } from "./Pod";
 import { Node } from "./Node";
 import { Player } from "./Player";
+import { ControlPlane } from "./ControlPlane";
+import { PhysicalHost } from "./PhysicalHost";
 
 function Lighting() {
   return (
@@ -122,7 +124,7 @@ function CameraController() {
 }
 
 export function Scene() {
-  const { nodes, pods, phase } = useGame();
+  const { nodes, pods, phase, controlPlane, physicalHosts } = useGame();
   
   if (phase === "menu") {
     return (
@@ -144,18 +146,40 @@ export function Scene() {
       <Ground />
       <GridFloor />
       <DataStreams />
-      
+
+      {/* Render physical host groupings (bottom layer) */}
+      {physicalHosts.map((host) => {
+        const hostNodePositions = nodes
+          .filter(n => n.infrastructure.physicalHostId === host.id)
+          .map(n => n.position);
+
+        return (
+          <PhysicalHost
+            key={host.id}
+            host={host}
+            nodePositions={hostNodePositions}
+          />
+        );
+      })}
+
+      {/* Render worker nodes */}
       {nodes.map((node) => (
         <Node key={node.id} node={node} />
       ))}
-      
+
+      {/* Render control plane nodes (separate area, elevated) */}
+      {controlPlane.map((cpNode) => (
+        <ControlPlane key={cpNode.id} node={cpNode} />
+      ))}
+
+      {/* Render pods */}
       {pods.map((pod) => (
         <Pod key={pod.id} pod={pod} />
       ))}
-      
+
       <Player />
-      
-      <OrbitControls 
+
+      <OrbitControls
         enablePan={false}
         enableZoom={true}
         minDistance={10}
