@@ -30,6 +30,23 @@ The game uses distinct phases to control what appears on screen:
 - **Level complete**: Summary and progression to the next level.
 - **Game complete**: Final state after the last level.
 
+## Screenshots
+
+### Main Menu
+![Main Menu](screenshots/main.png.png)
+
+### Level Selection
+![Level Selection](screenshots/levels.png.png)
+
+### Mission Briefing
+![Mission Briefing](screenshots/mission.png.png)
+
+### Gameplay
+![Gameplay](screenshots/gameplay.png.png)
+
+### Mission Complete
+![Mission Complete](screenshots/mission-complete.png.png)
+
 ## How to play
 
 ### Controls
